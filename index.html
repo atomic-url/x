@@ -5,11 +5,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Tiny redirect</title>
         <link rel="stylesheet" href="./style.css">
-        <script src="./main.js"></script>
+
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     </head>
+
     <body>
-        <h1>Redirecting...</h1>
-        <p>If you are not redirected automatically, please click the link below:</p>
-        <a id="redirect-link" target="_blank">Go to link</a>
+        <div id="redirect">
+            <h1>Redirecting...</h1>
+            <p>If you are not redirected automatically, please click the link below:</p>
+
+            <a id="redirect-url"></a>
+            <a id="redirect-link" target="_blank">Go to link</a>
+        </div>
+
+        <div id="save-link">
+            <h2>Save this link</h2>
+            <input type="text" id="link-input" placeholder="Enter your link here">
+            <button id="save-button" onclick="saveLink()">Save Link</button>
+            <br/>
+        </div>
+
+        <script src="./main.js"></script>
     </body>
 </html>
