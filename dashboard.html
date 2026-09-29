@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otre-URL · dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./dashboard.css">
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body class="dash">
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <!-- ===================== LOGIN / REGISTRO ===================== -->
+    <section id="auth-view" class="auth-wrap" hidden>
+        <header class="brand">
+            <span class="logo">🔗</span>
+            <span class="brand-name">Otre-URL</span>
+        </header>
+        <div class="card auth-card">
+            <div class="tabs" role="tablist">
+                <button type="button" class="tab active" data-mode="login">Iniciar sesión</button>
+                <button type="button" class="tab" data-mode="register">Crear cuenta</button>
+            </div>
+            <form id="auth-form" novalidate>
+                <label class="field">
+                    <span>Email</span>
+                    <input type="email" id="auth-email" autocomplete="email" required>
+                </label>
+                <label class="field">
+                    <span>Contraseña</span>
+                    <input type="password" id="auth-password" autocomplete="current-password" minlength="6" required>
+                </label>
+                <label class="field" id="confirm-field" hidden>
+                    <span>Repite la contraseña</span>
+                    <input type="password" id="auth-password2" autocomplete="new-password">
+                </label>
+                <p id="auth-error" class="error-msg" role="alert"></p>
+                <button type="submit" id="auth-submit" class="full">
+                    <span class="btn-label">Entrar</span>
+                    <span class="spinner small" aria-hidden="true"></span>
+                </button>
+                <button type="button" id="forgot-btn" class="ghost full">¿Olvidaste tu contraseña?</button>
+            </form>
+        </div>
+        <a class="back-home" href="./">← Volver al acortador</a>
+    </section>
+
+    <!-- ===================== LOADING ===================== -->
+    <div id="boot" class="boot"><div class="spinner"></div></div>
+
+    <!-- ===================== APP ===================== -->
+    <div id="app-view" hidden>
+        <header class="appbar">
+            <a class="brand small" href="./"><span class="brand-name">Otre-URL</span><span class="logo">🔗</span></a>
+            <div class="appbar-right">
+                <span class="live-dot" title="Actualización en tiempo real"></span>
+                <span id="user-email" class="user-email"></span>
+                <button type="button" id="logout-btn" class="secondary sm">Salir</button>
+            </div>
+        </header>
+
+        <main class="dash-main">
+            <!-- Título + filtros -->
+            <div class="page-head">
+                <div>
+                    <h1>Estadísticas</h1>
+                    <p class="subtitle" id="scope-label">Todos tus links</p>
+                </div>
+                <button type="button" id="new-link-btn">+ Nuevo link</button>
+            </div>
+
+            <div class="filters">
+                <select id="link-filter" aria-label="Filtrar por link">
+                    <option value="all">Todos los links</option>
+                </select>
+                <div class="segmented" id="range-filter" role="group" aria-label="Rango de fechas">
+                    <button type="button" data-range="1">24 h</button>
+                    <button type="button" data-range="7">7 d</button>
+                    <button type="button" data-range="30" class="active">30 d</button>
+                    <button type="button" data-range="90">90 d</button>
+                    <button type="button" data-range="0">Todo</button>
+                </div>
+                <button type="button" id="export-btn" class="secondary sm">⤓ Exportar CSV</button>
+            </div>
+
+            <!-- Crear link -->
+            <section id="create-card" class="panel create-panel" hidden>
+                <form id="create-form" class="create-grid">
+                    <label class="field grow2"><span>URL de destino</span><input type="text" id="new-url" placeholder="https://ejemplo.com/un-link-muy-largo" autocomplete="off"></label>
+                    <label class="field"><span>Alias (opcional)</span><input type="text" id="new-alias" placeholder="mi-link" autocomplete="off"></label>
+                    <label class="field"><span>Título (opcional)</span><input type="text" id="new-title" placeholder="Campaña de octubre" autocomplete="off"></label>
+                    <button type="submit" id="create-submit"><span class="btn-label">Crear</span><span class="spinner small" aria-hidden="true"></span></button>
+                </form>
+                <p id="create-error" class="error-msg" role="alert"></p>
+            </section>
+
+            <!-- KPIs -->
+            <section class="kpis">
+                <div class="kpi"><span class="kpi-label">Clicks</span><span class="kpi-value" id="kpi-clicks">0</span><span class="kpi-sub" id="kpi-clicks-sub"></span></div>
+                <div class="kpi"><span class="kpi-label">Visitantes únicos</span><span class="kpi-value" id="kpi-unique">0</span><span class="kpi-sub" id="kpi-unique-sub"></span></div>
+                <div class="kpi"><span class="kpi-label">Clicks hoy</span><span class="kpi-value" id="kpi-today">0</span><span class="kpi-sub" id="kpi-today-sub"></span></div>
+                <div class="kpi"><span class="kpi-label">Links</span><span class="kpi-value" id="kpi-links">0</span><span class="kpi-sub" id="kpi-links-sub"></span></div>
+                <div class="kpi"><span class="kpi-label">País principal</span><span class="kpi-value kpi-text" id="kpi-country">—</span><span class="kpi-sub" id="kpi-country-sub"></span></div>
+            </section>
+
+            <!-- Clicks en el tiempo -->
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Clicks en el tiempo</h3>
+                    <span class="panel-note" id="timeline-note"></span>
+                </div>
+                <div class="chart-box tall"><canvas id="timeline-chart" aria-label="Clicks por día"></canvas></div>
+            </section>
+
+            <!-- Mapa + países -->
+            <section class="grid-map">
+                <div class="panel map-panel">
+                    <div class="panel-head">
+                        <h3>Mapa de clicks</h3>
+                        <span class="panel-note" id="map-note"></span>
+                    </div>
+                    <div id="map"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-head"><h3>Países</h3></div>
+                    <div class="barlist" id="bl-country"></div>
+                </div>
+            </section>
+
+            <!-- Desgloses -->
+            <section class="grid-3">
+                <div class="panel"><div class="panel-head"><h3>Dispositivos</h3></div><div class="barlist" id="bl-device"></div></div>
+                <div class="panel"><div class="panel-head"><h3>Navegadores</h3></div><div class="barlist" id="bl-browser"></div></div>
+                <div class="panel"><div class="panel-head"><h3>Sistemas operativos</h3></div><div class="barlist" id="bl-os"></div></div>
+                <div class="panel"><div class="panel-head"><h3>Ciudades</h3></div><div class="barlist" id="bl-city"></div></div>
+                <div class="panel"><div class="panel-head"><h3>Referencias</h3></div><div class="barlist" id="bl-ref"></div></div>
+                <div class="panel"><div class="panel-head"><h3>Idiomas</h3></div><div class="barlist" id="bl-lang"></div></div>
+            </section>
+
+            <section class="grid-2">
+                <div class="panel">
+                    <div class="panel-head"><h3>Hora del día</h3><span class="panel-note">tu zona horaria</span></div>
+                    <div class="chart-box"><canvas id="hour-chart" aria-label="Clicks por hora"></canvas></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-head"><h3>Día de la semana</h3></div>
+                    <div class="chart-box"><canvas id="weekday-chart" aria-label="Clicks por día de la semana"></canvas></div>
+                </div>
+            </section>
+
+            <!-- Tabla de links -->
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Tus links</h3>
+                    <input type="search" id="link-search" class="search" placeholder="Buscar…" aria-label="Buscar links">
+                </div>
+                <div class="table-wrap">
+                    <table class="table" id="links-table">
+                        <thead>
+                            <tr>
+                                <th>Link</th>
+                                <th>Link corto</th>
+                                <th class="num">Clicks</th>
+                                <th class="num">Únicos</th>
+                                <th>Último click</th>
+                                <th>Creado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="empty" id="links-empty" hidden>
+                    <div class="big-icon">🔗</div>
+                    <p>Todavía no tienes links. Crea el primero con <b>+ Nuevo link</b>.</p>
+                </div>
+            </section>
+
+            <!-- Clicks recientes -->
+            <section class="panel">
+                <div class="panel-head">
+                    <h3>Clicks recientes</h3>
+                    <span class="panel-note" id="recent-note"></span>
+                </div>
+                <div class="table-wrap scroll">
+                    <table class="table" id="recent-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Link</th>
+                                <th>Ubicación</th>
+                                <th>Dispositivo</th>
+                                <th>Navegador</th>
+                                <th>Sistema</th>
+                                <th>Referencia</th>
+                                <th>Proveedor</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="empty" id="recent-empty" hidden><p>Sin clicks en este período.</p></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===================== MODALES ===================== -->
+    <div class="modal" id="qr-modal" hidden>
+        <div class="modal-card center">
+            <h3>Código QR</h3>
+            <p class="subtitle" id="qr-url"></p>
+            <div id="qr-box" class="qr-box"></div>
+            <div class="modal-actions">
+                <button type="button" class="secondary" data-close>Cerrar</button>
+                <button type="button" id="qr-download">Descargar PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="edit-modal" hidden>
+        <form class="modal-card" id="edit-form">
+            <h3>Editar link</h3>
+            <p class="subtitle" id="edit-key"></p>
+            <label class="field"><span>Título</span><input type="text" id="edit-title" maxlength="120"></label>
+            <label class="field"><span>URL de destino</span><input type="text" id="edit-url"></label>
+            <p id="edit-error" class="error-msg" role="alert"></p>
+            <div class="modal-actions">
+                <button type="button" class="secondary" data-close>Cancelar</button>
+                <button type="submit">Guardar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal" id="delete-modal" hidden>
+        <div class="modal-card">
+            <h3>¿Eliminar este link?</h3>
+            <p class="subtitle">Se borrará <b id="delete-key"></b> y todas sus estadísticas. El link corto dejará de funcionar. No se puede deshacer.</p>
+            <div class="modal-actions">
+                <button type="button" class="secondary" data-close>Cancelar</button>
+                <button type="button" id="delete-confirm" class="danger">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status"></div>
+
+    <script src="./common.js"></script>
+    <script src="./dashboard.js"></script>
+</body>
+</html>
