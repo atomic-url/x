@@ -3,7 +3,10 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Tiny redirect</title>
+        <title>Otre-URL</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./style.css">
 
         <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -11,20 +14,59 @@
     </head>
 
     <body>
-        <div id="redirect">
-            <h1>Redirecting...</h1>
-            <p>If you are not redirected automatically, please click the link below:</p>
+        <div class="bg-glow" aria-hidden="true"></div>
 
-            <a id="redirect-url"></a>
-            <a id="redirect-link" target="_blank">Go to link</a>
-        </div>
+        <main class="container">
+            <header class="brand">
+                <span class="brand-name">Otre-URL</span>
+                <span class="logo">🔗</span>
+            </header>
 
-        <div id="save-link">
-            <h2>Save this link</h2>
-            <input type="text" id="link-input" placeholder="Enter your link here">
-            <button id="save-button" onclick="saveLink()">Save Link</button>
-            <br/>
-        </div>
+            <!-- Crear link -->
+            <section id="save-link" class="card">
+                <h1>Shorten your links</h1>
+                <p class="subtitle">Paste a long URL and get a short one you can share anywhere.</p>
+
+                <form id="save-form" class="input-row" onsubmit="event.preventDefault(); saveLink();">
+                    <input type="text" id="link-input" placeholder="https://example.com/a-very-long-link" autocomplete="off" spellcheck="false">
+                    <button id="save-button" type="submit">
+                        <span class="btn-label">Shorten</span>
+                        <span class="spinner small" aria-hidden="true"></span>
+                    </button>
+                </form>
+                <p id="form-error" class="error-msg" role="alert"></p>
+
+                <!-- Resultado -->
+                <div id="result" class="result" hidden>
+                    <span class="result-label">Your short link</span>
+                    <div class="result-row">
+                        <a id="short-url" target="_blank" rel="noopener"></a>
+                        <button id="copy-button" class="secondary" type="button" onclick="copyLink()">Copy</button>
+                    </div>
+                    <button class="ghost" type="button" onclick="resetForm()">+ Shorten another</button>
+                </div>
+            </section>
+
+            <!-- Redirección -->
+            <section id="redirect" class="card center" hidden>
+                <div id="redirect-loading">
+                    <div class="spinner"></div>
+                    <h2>Redirecting…</h2>
+                    <p class="subtitle">If nothing happens, use the link below.</p>
+                    <a id="redirect-link" class="button-link" rel="noopener">Go to link</a>
+                </div>
+                <div id="redirect-error" hidden>
+                    <div class="big-icon">🤔</div>
+                    <h2>Link not found</h2>
+                    <p class="subtitle">This short link doesn't exist or was removed.</p>
+                    <a class="button-link" id="home-link" href="./">Create a new link</a>
+                </div>
+            </section>
+
+            <footer class="footer">Made with ♥ · Otredev</footer>
+        </main>
+
+        <div id="toast" class="toast" role="status"></div>
 
         <script src="./main.js"></script>
     </body>
