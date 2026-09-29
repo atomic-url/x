@@ -1,49 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Otre-URL</title>
+        <title>Otre-URL · acortador de links</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./style.css">
 
         <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
         <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     </head>
 
     <body>
         <div class="bg-glow" aria-hidden="true"></div>
 
+        <nav class="topnav">
+            <div id="nav-guest">
+                <a class="nav-btn" href="dashboard.html">Iniciar sesión</a>
+            </div>
+            <div id="nav-user" hidden>
+                <span id="nav-email" class="nav-email"></span>
+                <a class="nav-btn primary" href="dashboard.html">Dashboard →</a>
+            </div>
+        </nav>
+
         <main class="container">
             <header class="brand">
-                <span class="brand-name">Otre-URL</span>
                 <span class="logo">🔗</span>
+                <span class="brand-name">Otre-URL</span>
             </header>
 
             <!-- Crear link -->
             <section id="save-link" class="card">
-                <h1>Shorten your links</h1>
-                <p class="subtitle">Paste a long URL and get a short one you can share anywhere.</p>
+                <h1>Acorta tus links</h1>
+                <p class="subtitle">Pega una URL larga, compártela corta y mira quién la abre, desde dónde y con qué dispositivo.</p>
 
-                <form id="save-form" class="input-row" onsubmit="event.preventDefault(); saveLink();">
-                    <input type="text" id="link-input" placeholder="https://example.com/a-very-long-link" autocomplete="off" spellcheck="false">
-                    <button id="save-button" type="submit">
-                        <span class="btn-label">Shorten</span>
-                        <span class="spinner small" aria-hidden="true"></span>
-                    </button>
+                <div id="guest-cta" class="guest-cta">
+                    <p>Inicia sesión o crea una cuenta gratis para acortar links y ver sus estadísticas.</p>
+                    <a class="button-link" href="dashboard.html">Empezar</a>
+                </div>
+
+                <form id="save-form" onsubmit="event.preventDefault(); saveLink();" hidden>
+                    <div class="input-row">
+                        <input type="text" id="link-input" placeholder="https://ejemplo.com/un-link-muy-largo" autocomplete="off" spellcheck="false">
+                        <button id="save-button" type="submit">
+                            <span class="btn-label">Acortar</span>
+                            <span class="spinner small" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div class="alias-row">
+                        <span class="alias-prefix">Alias opcional:</span>
+                        <input type="text" id="alias-input" placeholder="mi-link" autocomplete="off" spellcheck="false">
+                    </div>
                 </form>
                 <p id="form-error" class="error-msg" role="alert"></p>
 
                 <!-- Resultado -->
                 <div id="result" class="result" hidden>
-                    <span class="result-label">Your short link</span>
+                    <span class="result-label">Tu link corto</span>
                     <div class="result-row">
                         <a id="short-url" target="_blank" rel="noopener"></a>
-                        <button id="copy-button" class="secondary" type="button" onclick="copyLink()">Copy</button>
+                        <button id="copy-button" class="secondary" type="button" onclick="copyLink()">Copiar</button>
                     </div>
-                    <button class="ghost" type="button" onclick="resetForm()">+ Shorten another</button>
+                    <div class="result-actions">
+                        <button class="ghost" type="button" onclick="resetForm()">+ Acortar otro</button>
+                        <a id="stats-link" class="ghost-link" href="dashboard.html">Ver estadísticas →</a>
+                    </div>
                 </div>
             </section>
 
@@ -51,23 +76,24 @@
             <section id="redirect" class="card center" hidden>
                 <div id="redirect-loading">
                     <div class="spinner"></div>
-                    <h2>Redirecting…</h2>
-                    <p class="subtitle">If nothing happens, use the link below.</p>
-                    <a id="redirect-link" class="button-link" rel="noopener">Go to link</a>
+                    <h2>Redirigiendo…</h2>
+                    <p class="subtitle">Si no pasa nada, usa el botón de abajo.</p>
+                    <a id="redirect-link" class="button-link" rel="noopener">Ir al link</a>
                 </div>
                 <div id="redirect-error" hidden>
                     <div class="big-icon">🤔</div>
-                    <h2>Link not found</h2>
-                    <p class="subtitle">This short link doesn't exist or was removed.</p>
-                    <a class="button-link" id="home-link" href="./">Create a new link</a>
+                    <h2>Link no encontrado</h2>
+                    <p class="subtitle">Este link corto no existe o fue eliminado.</p>
+                    <a class="button-link" id="home-link" href="./">Crear un link nuevo</a>
                 </div>
             </section>
 
-            <footer class="footer">Made with ♥ · Otredev</footer>
+            <footer class="footer">Hecho con ♥ · by Otredev</footer>
         </main>
 
         <div id="toast" class="toast" role="status"></div>
 
+        <script src="./common.js"></script>
         <script src="./main.js"></script>
     </body>
 </html>
