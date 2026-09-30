@@ -69,13 +69,13 @@ async function copyText(text) {
 }
 
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, ms = 2200) {
   const t = $("toast");
   if (!t) return;
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  toastTimer = setTimeout(() => t.classList.remove("show"), ms);
 }
 
 // ---------- Detección de dispositivo / navegador / sistema ----------
