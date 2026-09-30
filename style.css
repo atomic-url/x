@@ -360,3 +360,10 @@ button.ghost:hover { color: var(--text); transform: none; }
   .guest-cta { flex-direction: column; align-items: stretch; text-align: center; }
   .nav-email { display: none; }
 }
+
+/* ---------- PWA ---------- */
+.topnav { display: flex; align-items: center; gap: 12px; }
+button.nav-btn { font: inherit; font-size: 14px; font-weight: 600; box-shadow: none; }
+button.nav-btn:hover { transform: none; box-shadow: none; }
+.standalone .topnav { top: env(safe-area-inset-top); }
+.toast { bottom: calc(28px + env(safe-area-inset-bottom)); max-width: calc(100vw - 32px); text-align: center; }

@@ -96,6 +96,15 @@ function cut(v, n) {
 }
 
 async function handleRedirect(key) {
+  if (!navigator.onLine) {
+    $("redirect-loading").hidden = true;
+    $("redirect-error").hidden = false;
+    $("redirect-error").querySelector(".big-icon").textContent = "📡";
+    $("redirect-error").querySelector("h2").textContent = "Sin conexión";
+    $("redirect-error").querySelector(".subtitle").textContent = "Conéctate a internet para abrir este link.";
+    window.addEventListener("online", () => location.reload(), { once: true });
+    return;
+  }
   const geoPromise = getGeo();
   let target;
 

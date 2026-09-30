@@ -95,6 +95,45 @@ auth.onAuthStateChanged((user) => {
   if (!user) return;
   $("user-email").textContent = user.email;
   subscribe(user.uid);
+  handleIncoming();
+});
+
+// ============================================================
+//  PWA: link compartido desde otra app (share_target) y atajo "Nuevo link"
+// ============================================================
+let incomingHandled = false;
+function handleIncoming() {
+  if (incomingHandled) return;
+  incomingHandled = true;
+  const url = new URL(location.href);
+  const p = url.searchParams;
+  const shared = [p.get("share_url"), p.get("share_text"), p.get("share_title")].filter(Boolean).join(" ");
+  const found = shared.match(/https?:\/\/[^\s<>"']+/i);
+  const isNew = p.get("new") === "1";
+
+  if (found || isNew || shared) {
+    $("create-card").hidden = false;
+    if (found) {
+      $("new-url").value = found[0];
+      const title = (p.get("share_title") || "").trim();
+      if (title && !/^https?:\/\//i.test(title)) $("new-title").value = title.slice(0, 120);
+      showToast("Link recibido: revisa y pulsa Crear");
+    } else if (shared) {
+      $("create-error").textContent = "No encontré un link en lo que compartiste.";
+    }
+    setTimeout(() => (found ? $("create-submit") : $("new-url")).focus(), 300);
+  }
+  ["share_url", "share_text", "share_title", "new", "source"].forEach((k) => url.searchParams.delete(k));
+  history.replaceState(null, "", url);
+}
+
+// Indicador de conexión en tiempo real (punto verde / gris)
+db.ref(".info/connected").on("value", (snap) => {
+  const on = snap.val() === true;
+  const dot = document.querySelector(".live-dot");
+  if (!dot) return;
+  dot.classList.toggle("offline", !on);
+  dot.title = on ? "Conectado · actualización en tiempo real" : "Sin conexión · reconectando…";
 });
 
 // ============================================================

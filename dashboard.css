@@ -401,3 +401,12 @@ button.danger { background: var(--down); box-shadow: none; }
 
 /* Mapa OpenStreetMap en modo oscuro */
 #map.map-dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.6); }
+
+/* ---------- PWA ---------- */
+.live-dot.offline { background: var(--muted); animation: none; }
+.standalone .appbar { padding-top: calc(12px + env(safe-area-inset-top)); }
+.appbar { padding-left: max(28px, env(safe-area-inset-left)); padding-right: max(28px, env(safe-area-inset-right)); }
+@media (max-width: 640px) {
+  .appbar { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .appbar [data-install] { padding: 8px 10px; }
+}

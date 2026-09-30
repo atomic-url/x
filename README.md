@@ -58,3 +58,22 @@ aparecen en ningún dashboard.
 
 La redirección espera como máximo unos 4 segundos a la ubicación y al registro del click.
 Si alguno falla, redirige de todas formas.
+
+## App instalable (PWA)
+
+| Archivo | Qué hace |
+|---|---|
+| `manifest.webmanifest` | Nombre, íconos, colores, atajos y "compartir con Otre-URL" |
+| `sw.js` | Service worker: guarda la app para que abra rápido y sin conexión |
+| `pwa.js` | Registra el service worker y maneja el botón **Instalar** |
+| `icons/` | Íconos de la app (normales y *maskable* para Android) |
+
+- **Instalar:** en Chrome, Edge o Android aparece el botón **⤓ Instalar**. En iPhone o iPad
+  el botón explica cómo hacerlo: Safari → Compartir → *Agregar a inicio*.
+- **Compartir un link a la app** (Android, con la app instalada): desde cualquier app,
+  Compartir → *Otre-URL* abre el dashboard con el formulario ya lleno.
+- **Atajos:** mantén presionado el ícono de la app → *Nuevo link*.
+- **Requisito:** la página debe estar publicada con **https** (GitHub Pages, Firebase Hosting…)
+  o abierta en `localhost`.
+- **Al publicar cambios**, sube el número de `VERSION` en `sw.js` (por ejemplo `"v2"`) para que
+  los usuarios reciban la versión nueva y se borre la copia vieja.
